@@ -30,7 +30,7 @@ namespace SecondaryGroups
       );
     }
 
-    private void CommandRouter(CommandArgs args)
+    private static void CommandRouter(CommandArgs args)
     {
       if (args.Parameters.Count < 2)
       {
@@ -71,8 +71,9 @@ namespace SecondaryGroups
 
     private static void OnPlayerPermission(PlayerPermissionEventArgs e)
     {
+#if DEBUG
       var sv = Stopwatch.StartNew();
-
+#endif
       if (e.Player.User == null) return;
 
       var data = GroupData.Get(e.Player.User);
@@ -82,8 +83,10 @@ namespace SecondaryGroups
       if (data.Permissions.Contains(e.Permission))
         e.Handled = true;
 
+#if DEBUG
       sv.Stop();
       Console.WriteLine("Permission check spent:" + sv.ElapsedMilliseconds);
+#endif
     }
 
     protected override void Dispose(bool disposing)
