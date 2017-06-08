@@ -62,11 +62,20 @@ namespace SecondaryGroups
 
       if (args.Parameters.Count < 1 || args.Parameters.Any(string.IsNullOrWhiteSpace))
       {
-        args.Player.SendErrorMessage("Invalid groups!");
+        args.Player.SendErrorMessage("Invalid usage! Usage: /sgroup del [player] [groups]");
         return;
       }
 
-      groupdata.RemoveGroups(args.Parameters.Select(TShock.Groups.GetGroupByName));
+      var foundGroups = args.Parameters.Select(TShock.Groups.GetGroupByName)
+        .Where(g => groupdata.Groups.Contains(g)).ToArray();
+
+      if (foundGroups.Length == 0)
+      {
+        args.Player.SendErrorMessage("Player isn't a member of those groups!");
+        return;
+      }
+
+      groupdata.RemoveGroups(foundGroups);
 
       args.Player.SendSuccessMessage(
         "Secondary groups \"{0}\" removed from user {1} successfully!", string.Join(", ", args.Parameters), user.Name

@@ -8,7 +8,7 @@ namespace SecondaryGroups
 {
   public class GroupData
   {
-    private static Dictionary<int, GroupData> _cache = GetGroups().ToDictionary(k => k.ID);
+    private static Dictionary<int, GroupData> _cache;
     public int ID { get; }
 
     public User User => TShock.Users.GetUserByID(ID);
@@ -16,12 +16,17 @@ namespace SecondaryGroups
     private List<Group> _groups;
     public IReadOnlyCollection<Group> Groups => _groups;
 
-    private string[] _permissions;
-    public IEnumerable<string> Permissions => _permissions ?? (_permissions = GetPermissions().ToArray());
+    //private string[] _permissions;
+    //public IEnumerable<string> Permissions => _permissions ?? (_permissions = GetPermissions().ToArray());
+
+    public IEnumerable<string> Permissions => GetPermissions();
+
+    private Group GetTempgroup()
+      => TShock.Players.FirstOrDefault(p => p?.tempGroup != null && p.User != null && p.User == User)?.tempGroup;
 
     private IEnumerable<string> GetPermissions()
       => _groups.SelectMany(grp => grp.TotalPermissions)
-        .Concat(TShock.Groups.GetGroupByName(User.Group).TotalPermissions)
+        .Concat(TShock.Groups.GetGroupByName(GetTempgroup()?.Name ?? User.Group).TotalPermissions)
         .Distinct();
 
     private static IEnumerable<GroupData> GetGroups()
@@ -56,6 +61,8 @@ namespace SecondaryGroups
 
     public static GroupData Get(User user)
     {
+      if (_cache == null) _cache = GetGroups().ToDictionary(k => k.ID);
+
       if (_cache.TryGetValue(user.ID, out GroupData data))
         return data;
 
@@ -89,6 +96,8 @@ namespace SecondaryGroups
         return;
 
       _groups.AddRange(delta);
+
+      ResetCache();
       Save();
     }
 
@@ -100,6 +109,8 @@ namespace SecondaryGroups
         throw new ArgumentException("One of the names provided are invalid.");
 
       _groups.RemoveAll(groups.Contains);
+
+      ResetCache();
       Save();
     }
 
@@ -109,5 +120,7 @@ namespace SecondaryGroups
             ID, string.Join(";", _groups)) != 1)
         throw new Exception("Unexpected error while saving to database.");
     }
+
+    public static void ResetCache() => _cache = null;
   }
 }

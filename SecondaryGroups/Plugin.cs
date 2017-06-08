@@ -25,12 +25,54 @@ namespace SecondaryGroups
       Database.Connect();
       PlayerHooks.PlayerPermission += OnPlayerPermission;
 
-      TShockAPI.Commands.ChatCommands.Add(
+      PlayerHooks.PlayerItembanPermission += OnItemban;
+	PlayerHooks.PlayerProjbanPermission += OnProjban;
+
+	PlayerHooks.PlayerTilebanPermission += OnTileban;
+
+
+			TShockAPI.Commands.ChatCommands.Add(
         new Command("secondarygroups.modify", CommandRouter, "sgroup", "secgroup")
       );
     }
 
-    private static void CommandRouter(CommandArgs args)
+    private static void OnItemban(PlayerItembanPermissionEventArgs e)
+    {
+      if (e.Player.User == null) return;
+
+      var data = GroupData.Get(e.Player.User);
+
+      if (data == null) return;
+
+	  if (data.Groups.Any(g => e.BannedItem.AllowedGroups.Contains(g.Name)))
+		e.Handled = true;
+    }
+
+	  private static void OnProjban(PlayerProjbanPermissionEventArgs e)
+	  {
+		  if (e.Player.User == null) return;
+
+		  var data = GroupData.Get(e.Player.User);
+
+		  if (data == null) return;
+
+		  if (data.Groups.Any(g => e.BannedProjectile.AllowedGroups.Contains(g.Name)))
+			  e.Handled = true;
+	  }
+
+	  private static void OnTileban(PlayerTilebanPermissionEventArgs e)
+	  {
+		  if (e.Player.User == null) return;
+
+		  var data = GroupData.Get(e.Player.User);
+
+		  if (data == null) return;
+
+		  if (data.Groups.Any(g => e.BannedTile.AllowedGroups.Contains(g.Name)))
+			  e.Handled = true;
+	  }
+
+		private static void CommandRouter(CommandArgs args)
     {
       if (args.Parameters.Count < 2)
       {
@@ -74,6 +116,7 @@ namespace SecondaryGroups
 #if DEBUG
       var sv = Stopwatch.StartNew();
 #endif
+
       if (e.Player.User == null) return;
 
       var data = GroupData.Get(e.Player.User);
@@ -85,14 +128,21 @@ namespace SecondaryGroups
 
 #if DEBUG
       sv.Stop();
-      Console.WriteLine("Permission check spent:" + sv.ElapsedMilliseconds);
+
+      if (sv.ElapsedMilliseconds > 5)
+        Console.WriteLine("Permission check spent:" + sv.ElapsedMilliseconds);
 #endif
     }
 
     protected override void Dispose(bool disposing)
     {
       PlayerHooks.PlayerPermission -= OnPlayerPermission;
-      base.Dispose(disposing);
+
+	    PlayerHooks.PlayerTilebanPermission -= OnTileban;
+			PlayerHooks.PlayerProjbanPermission -= OnProjban;
+
+	    PlayerHooks.PlayerTilebanPermission -= OnTileban;
+			base.Dispose(disposing);
     }
   }
 }
