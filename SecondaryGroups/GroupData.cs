@@ -9,11 +9,19 @@ namespace SecondaryGroups
   public class GroupData
   {
     private static Dictionary<int, GroupData> _cache;
+
+    private List<Group> _groups;
+
+    private GroupData(int userId, string secondaryGroups)
+    {
+      ID = userId;
+      _groups = new List<Group>(secondaryGroups.Split(';')
+        .Select(TShock.Groups.GetGroupByName).Where(g => g != null));
+    }
+
     public int ID { get; }
 
     public User User => TShock.Users.GetUserByID(ID);
-
-    private List<Group> _groups;
     public IReadOnlyCollection<Group> Groups => _groups;
 
     //private string[] _permissions;
@@ -22,12 +30,16 @@ namespace SecondaryGroups
     public IEnumerable<string> Permissions => GetPermissions();
 
     private Group GetTempgroup()
-      => TShock.Players.FirstOrDefault(p => p?.tempGroup != null && p.User != null && p.User == User)?.tempGroup;
+    {
+      return TShock.Players.FirstOrDefault(p => p?.tempGroup != null && p.User != null && p.User == User)?.tempGroup;
+    }
 
     private IEnumerable<string> GetPermissions()
-      => _groups.SelectMany(grp => grp.TotalPermissions)
+    {
+      return _groups.SelectMany(grp => grp.TotalPermissions)
         .Concat(TShock.Groups.GetGroupByName(GetTempgroup()?.Name ?? User.Group).TotalPermissions)
         .Distinct();
+    }
 
     private static IEnumerable<GroupData> GetGroups()
     {
@@ -36,13 +48,6 @@ namespace SecondaryGroups
         while (q.Read())
           yield return new GroupData(q.Get<int>("ID"), q.Get<string>("Groups"));
       }
-    }
-
-    private GroupData(int userId, string secondaryGroups)
-    {
-      ID = userId;
-      _groups = new List<Group>(secondaryGroups.Split(';')
-        .Select(TShock.Groups.GetGroupByName).Where(g => g != null));
     }
 
     public static GroupData Create(User user, IEnumerable<string> groups)
@@ -121,6 +126,9 @@ namespace SecondaryGroups
         throw new Exception("Unexpected error while saving to database.");
     }
 
-    public static void ResetCache() => _cache = null;
+    public static void ResetCache()
+    {
+      _cache = null;
+    }
   }
 }

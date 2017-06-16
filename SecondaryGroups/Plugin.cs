@@ -11,14 +11,14 @@ namespace SecondaryGroups
   [ApiVersion(2, 1)]
   public class Plugin : TerrariaPlugin
   {
+    public Plugin(Main game) : base(game)
+    {
+    }
+
     public override string Name => "SecondaryGroups";
     public override string Author => "Newy";
     public override string Description => "XenForo style secondary groups!";
     public override Version Version => typeof(Plugin).Assembly.GetName().Version;
-
-    public Plugin(Main game) : base(game)
-    {
-    }
 
     public override void Initialize()
     {
@@ -26,12 +26,12 @@ namespace SecondaryGroups
       PlayerHooks.PlayerPermission += OnPlayerPermission;
 
       PlayerHooks.PlayerItembanPermission += OnItemban;
-	PlayerHooks.PlayerProjbanPermission += OnProjban;
+      PlayerHooks.PlayerProjbanPermission += OnProjban;
 
-	PlayerHooks.PlayerTilebanPermission += OnTileban;
+      PlayerHooks.PlayerTilebanPermission += OnTileban;
 
 
-			TShockAPI.Commands.ChatCommands.Add(
+      TShockAPI.Commands.ChatCommands.Add(
         new Command("secondarygroups.modify", CommandRouter, "sgroup", "secgroup")
       );
     }
@@ -44,35 +44,35 @@ namespace SecondaryGroups
 
       if (data == null) return;
 
-	  if (data.Groups.Any(g => e.BannedItem.AllowedGroups.Contains(g.Name)))
-		e.Handled = true;
+      if (data.Groups.Any(g => e.BannedItem.AllowedGroups.Contains(g.Name)))
+        e.Handled = true;
     }
 
-	  private static void OnProjban(PlayerProjbanPermissionEventArgs e)
-	  {
-		  if (e.Player.User == null) return;
+    private static void OnProjban(PlayerProjbanPermissionEventArgs e)
+    {
+      if (e.Player.User == null) return;
 
-		  var data = GroupData.Get(e.Player.User);
+      var data = GroupData.Get(e.Player.User);
 
-		  if (data == null) return;
+      if (data == null) return;
 
-		  if (data.Groups.Any(g => e.BannedProjectile.AllowedGroups.Contains(g.Name)))
-			  e.Handled = true;
-	  }
+      if (data.Groups.Any(g => e.BannedProjectile.AllowedGroups.Contains(g.Name)))
+        e.Handled = true;
+    }
 
-	  private static void OnTileban(PlayerTilebanPermissionEventArgs e)
-	  {
-		  if (e.Player.User == null) return;
+    private static void OnTileban(PlayerTilebanPermissionEventArgs e)
+    {
+      if (e.Player.User == null) return;
 
-		  var data = GroupData.Get(e.Player.User);
+      var data = GroupData.Get(e.Player.User);
 
-		  if (data == null) return;
+      if (data == null) return;
 
-		  if (data.Groups.Any(g => e.BannedTile.AllowedGroups.Contains(g.Name)))
-			  e.Handled = true;
-	  }
+      if (data.Groups.Any(g => e.BannedTile.AllowedGroups.Contains(g.Name)))
+        e.Handled = true;
+    }
 
-		private static void CommandRouter(CommandArgs args)
+    private static void CommandRouter(CommandArgs args)
     {
       if (args.Parameters.Count < 2)
       {
@@ -138,11 +138,11 @@ namespace SecondaryGroups
     {
       PlayerHooks.PlayerPermission -= OnPlayerPermission;
 
-	    PlayerHooks.PlayerTilebanPermission -= OnTileban;
-			PlayerHooks.PlayerProjbanPermission -= OnProjban;
+      PlayerHooks.PlayerTilebanPermission -= OnTileban;
+      PlayerHooks.PlayerProjbanPermission -= OnProjban;
 
-	    PlayerHooks.PlayerTilebanPermission -= OnTileban;
-			base.Dispose(disposing);
+      PlayerHooks.PlayerTilebanPermission -= OnTileban;
+      base.Dispose(disposing);
     }
   }
 }

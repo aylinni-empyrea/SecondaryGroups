@@ -10,13 +10,13 @@ namespace SecondaryGroups
 {
   internal static class Database
   {
-    internal static IDbConnection Connection { get; private set; }
-
     private static readonly SqlTable TableStructure =
       new SqlTable("SecondaryGroups",
         new SqlColumn("ID", MySqlDbType.Int32) {NotNull = true, Primary = true, Unique = true},
         new SqlColumn("Groups", MySqlDbType.Text)
       );
+
+    internal static IDbConnection Connection { get; private set; }
 
     internal static void Connect()
     {
