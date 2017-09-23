@@ -1,5 +1,8 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using TShockAPI;
+using TShockAPI.DB;
 
 namespace SecondaryGroups
 {
@@ -7,16 +10,16 @@ namespace SecondaryGroups
   {
     internal static void ListCommand(CommandArgs args)
     {
-      var users = TShock.Users.GetUsersByName(args.Parameters[0]);
+      var users = GetUsersByName(args.Parameters[0]).ToArray();
       args.Parameters.RemoveAt(0);
 
-      if (users.Count == 0)
+      if (users.Length == 0)
       {
         args.Player.SendErrorMessage("No users matched!");
         return;
       }
 
-      if (users.Count > 1)
+      if (users.Length > 1)
       {
         TShock.Utils.SendMultipleMatchError(args.Player, users.Select(u => u.Name));
         return;
@@ -36,16 +39,16 @@ namespace SecondaryGroups
 
     internal static void RemoveCommand(CommandArgs args)
     {
-      var users = TShock.Users.GetUsersByName(args.Parameters[0]);
+      var users = GetUsersByName(args.Parameters[0]).ToArray();
       args.Parameters.RemoveAt(0);
 
-      if (users.Count == 0)
+      if (users.Length == 0)
       {
         args.Player.SendErrorMessage("No users matched!");
         return;
       }
 
-      if (users.Count > 1)
+      if (users.Length > 1)
       {
         TShock.Utils.SendMultipleMatchError(args.Player, users.Select(u => u.Name));
         return;
@@ -84,16 +87,16 @@ namespace SecondaryGroups
 
     internal static void AddCommand(CommandArgs args)
     {
-      var users = TShock.Users.GetUsersByName(args.Parameters[0]);
+      var users = GetUsersByName(args.Parameters[0]).ToArray();
       args.Parameters.RemoveAt(0);
 
-      if (users.Count == 0)
+      if (users.Length == 0)
       {
         args.Player.SendErrorMessage("No users matched!");
         return;
       }
 
-      if (users.Count > 1)
+      if (users.Length > 1)
       {
         TShock.Utils.SendMultipleMatchError(args.Player, users.Select(u => u.Name));
         return;
@@ -130,6 +133,20 @@ namespace SecondaryGroups
         "Secondary groups \"{0}\" added to user {1} successfully!",
         string.Join(", ", providedGroups.Select(g => g.Name)), user.Name
       );
+    }
+
+    private static IEnumerable<User> GetUsersByName(string query)
+    {
+      foreach (var user in TShock.Users.GetUsersByName(query).Where(u => u != null))
+      {
+        if (string.Equals(user.Name, query, StringComparison.OrdinalIgnoreCase))
+        {
+          yield return user;
+          yield break;
+        }
+        else if (user.Name.StartsWith(query, StringComparison.OrdinalIgnoreCase))
+          yield return user;
+      }
     }
   }
 }
